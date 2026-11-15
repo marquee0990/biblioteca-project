@@ -1,11 +1,8 @@
 package modelo;
 
 public class Funcionario extends Usuario{
-   private int id;
-   private String nome;
-    
    public Funcionario(int id, String nome){
-        super(id, nome, TipoUsuario.FUNCIONARIO, 3);
+        super(id, nome, TipoUsuario.FUNCIONARIO, 4);
     }
 
     public Funcionario(int id, String nome, int limiteEmprestimo){

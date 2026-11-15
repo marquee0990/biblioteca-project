@@ -1,9 +1,6 @@
 package modelo;
 
 public class Professor extends Usuario{
-   private int id;
-   private String nome;
-    
    public Professor(int id, String nome){
         super(id, nome, TipoUsuario.PROFESSOR, 5);
     }

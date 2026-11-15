@@ -25,6 +25,45 @@ public class Emprestimo {
         this.dataDevolucao = null;
     }
 
+    public Emprestimo(
+        int id,
+        Usuario usuario,
+        ItemBiblioteca item,
+        LocalDate dataEmprestimo,
+        LocalDate dataPrevistaDevolucao,
+        LocalDate dataDevolucao) {
+
+    if (usuario == null || item == null ||
+            dataEmprestimo == null ||
+            dataPrevistaDevolucao == null) {
+
+        throw new IllegalArgumentException(
+            "Dados obrigatórios do empréstimo não podem ser nulos."
+        );
+    }
+
+    if (dataPrevistaDevolucao.isBefore(dataEmprestimo)) {
+        throw new IllegalArgumentException(
+            "A data prevista é anterior ao empréstimo."
+        );
+    }
+
+    if (dataDevolucao != null &&
+            dataDevolucao.isBefore(dataEmprestimo)) {
+
+        throw new IllegalArgumentException(
+            "A devolução é anterior ao empréstimo."
+        );
+    }
+
+    this.id = id;
+    this.usuario = usuario;
+    this.item = item;
+    this.dataEmprestimo = dataEmprestimo;
+    this.dataPrevistaDevolucao = dataPrevistaDevolucao;
+    this.dataDevolucao = dataDevolucao;
+}
+
     public int getId(){
         return this.id;
     }
@@ -75,23 +114,28 @@ public class Emprestimo {
         return multa * 0.5;
     }
 
-    public void registrarDevolucao(LocalDate data){
-        if(!estaAtivo()){
-            throw new IllegalStateException(
-                "Este empréstimo já foi devolvido"
-            );
-        }
+    public void registrarDevolucao(LocalDate data) {
 
-        if(dataDevolucao == null){
-            throw new IllegalArgumentException("A data de devolução não pode ser nula.");
-        }
-
-        if(dataDevolucao.isBefore(dataEmprestimo)){
-            throw new IllegalArgumentException("A data de devolução não pode ser anterior à data do empréstimo.");
-        }
-
-        this.dataDevolucao = dataDevolucao;
+    if (!estaAtivo()) {
+        throw new IllegalStateException(
+            "Este empréstimo já foi devolvido."
+        );
     }
+
+    if (data == null) {
+        throw new IllegalArgumentException(
+            "A data de devolução não pode ser nula."
+        );
+    }
+
+    if (data.isBefore(dataEmprestimo)) {
+        throw new IllegalArgumentException(
+            "A devolução não pode ser anterior ao empréstimo."
+        );
+    }
+
+    this.dataDevolucao = data;
+}
     
     @Override
     public String toString() {
