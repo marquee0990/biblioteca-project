@@ -53,13 +53,19 @@ public class Biblioteca {
         return null;
     }
 
-    public void editarItem(int id, String novoTitulo, int novoAno) {
+    public void editarItem(int id, String novoTitulo, int novoAno) throws ItemIndisponivelException{
 
         ItemBiblioteca item = buscarItemPorId(id);
 
         if (item == null) {
             throw new IllegalArgumentException(
                 "Item não encontrado."
+            );
+        }
+
+        if (item.getStatus() == StatusItem.EMPRESTADO) {
+            throw new ItemIndisponivelException(
+                "Não é possível editar um item emprestado."
             );
         }
 
@@ -77,6 +83,29 @@ public class Biblioteca {
 
         item.setTitulo(novoTitulo);
         item.setAno(novoAno);
+    }
+
+    public void editarItem(int id, String novoTitulo, int novoAno, String novoAutor) throws ItemIndisponivelException{
+
+        ItemBiblioteca item = buscarItemPorId(id);
+
+        if (!(item instanceof Livro livro)) {
+            throw new IllegalArgumentException(
+                item == null
+                    ? "Item não encontrado."
+                    : "Somente livros possuem autor."
+            );
+        }
+
+        if (novoAutor == null || novoAutor.isBlank()) {
+            throw new IllegalArgumentException(
+                "O nome do autor não pode estar vazio."
+            );
+        }
+
+        editarItem(id, novoTitulo, novoAno);
+
+        livro.setAutor(novoAutor);
     }
 
     public void removerItem(int id) {
@@ -246,8 +275,6 @@ public class Biblioteca {
         return resultados;
     }
 
-    // EMPRÉSTIMOS
-
     public int contarEmprestimosAtivos(Usuario usuario) {
 
         int quantidade = 0;
@@ -289,6 +316,7 @@ public class Biblioteca {
                 "Este item já está emprestado."
             );
         }
+        
 
         int ativos = contarEmprestimosAtivos(usuario);
 

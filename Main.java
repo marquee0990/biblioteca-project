@@ -9,6 +9,7 @@ import persistencia.GerenciadorArquivos;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main{
@@ -80,10 +81,27 @@ public class Main{
                     case "9" -> {
                         int id = lerInt("ID do empréstimo: ");
 
+                        Emprestimo emprestimo = biblioteca.buscarEmprestimoPorId(id);
+
+                        if (emprestimo == null) {
+                            throw new EmprestimoInvalidoException(
+                                "Empréstimo não encontrado."
+                            );
+                        }
+
                         double multa = biblioteca.devolverItem(id);
 
-                        System.out.println("Devolução realizada!");
+                        ItemBiblioteca item = emprestimo.getItem();
+
+                        String tipo = item.getClass().getSimpleName();
+
+                        System.out.println("\n=== DEVOLUÇÃO REALIZADA ===");
+                        System.out.println("Item: " + item.getTitulo());
+                        System.out.println("Tipo: " + tipo);
+                        System.out.println("Usuário: " + emprestimo.getUsuario().getNome());
+                        System.out.println("Status: " + item.getStatus());
                         System.out.printf("Multa: R$ %.2f%n", multa);
+
                     }
 
                     case "10" -> {
@@ -205,21 +223,34 @@ private static void cadastrarItem(){
             );
 }
 
-private static void editarItem() throws RegistroNaoEncontradoException{
+private static void editarItem() throws ItemIndisponivelException{
     System.out.println("\n=== EDITAR ITEM ===");
 
-        int id = lerInt("ID do item: ");
-        String novoTitulo = ler("Novo título: ");
-        int novoAno = lerInt("Novo ano: ");
+    int id = lerInt("ID do item: ");
 
-        biblioteca.editarItem(
-            id, novoTitulo, novoAno
-        );
+    ItemBiblioteca item = biblioteca.buscarItemPorId(id);
 
-        System.out.println(
-            "Item editado com sucesso!"
-        );
+    if (item == null) {
+        throw new IllegalArgumentException("Item não encontrado.");
+    }
+
+    String novoTitulo = ler("Novo título: ");
+    int novoAno = lerInt("Novo ano: ");
+
+    if (item instanceof Livro) {
+
+        String novoAutor = ler("Novo autor: ");
+
+        biblioteca.editarItem(id, novoTitulo, novoAno, novoAutor);
+
+    } else {
+
+        biblioteca.editarItem(id, novoTitulo, novoAno);
+    }
+
+    System.out.println("Item editado com sucesso!");
 }
+
 
 private static void cadastrarUsuario() {
 
@@ -328,20 +359,34 @@ private static void consultarAcervo() {
             case 2 -> {
                 String titulo = ler("Título: ");
 
-                for (ItemBiblioteca item :
-                        biblioteca.buscarPorTitulo(titulo)) {
+                List<ItemBiblioteca> resultados =
+                    biblioteca.buscarPorTitulo(titulo);
 
-                    System.out.println(item.consultar());
+                if (resultados.isEmpty()) {
+                    System.out.println(
+                        "Nenhum item foi encontrado com esse título."
+                    );
+                } else {
+                    for (ItemBiblioteca item : resultados) {
+                        System.out.println(item.consultar());
+                    }
                 }
             }
 
             case 3 -> {
                 String autor = ler("Autor: ");
 
-                for (Livro livro :
-                        biblioteca.buscarPorAutor(autor)) {
+                List<Livro> resultados =
+                biblioteca.buscarPorAutor(autor);
 
-                    System.out.println(livro.consultar());
+                if (resultados.isEmpty()) {
+                    System.out.println(
+                        "Nenhum livro foi encontrado com esse autor."
+                    );
+                } else {
+                    for (Livro livro : resultados) {
+                        System.out.println(livro.consultar());
+                    }
                 }
             }
 
@@ -367,12 +412,19 @@ private static void consultarAcervo() {
                     );
                 }
 
-                for (ItemBiblioteca item :
-                        biblioteca.buscarPorTipo(classe)) {
+                List<ItemBiblioteca> resultados =
+                biblioteca.buscarPorTipo(classe);
 
+            if (resultados.isEmpty()) {
+                System.out.println(
+                    "Nenhum item desse tipo foi encontrado."
+                );
+            } else {
+                for (ItemBiblioteca item : resultados) {
                     System.out.println(item.consultar());
                 }
             }
+        }
 
             case 5 -> {
                 for (ItemBiblioteca item :
